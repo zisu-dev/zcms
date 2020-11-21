@@ -23,7 +23,6 @@ export const authPlugin = fp(async (V) => {
   V.register(fastifyJwt, { secret: jwtMeta.value })
 
   V.decorate('auth:login', async (req: FastifyRequest) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const r = <any>await req.jwtVerify()
     if (!r._id) throw V.httpErrors.forbidden()
     const user = await users.findOne(
@@ -46,7 +45,6 @@ export const authPlugin = fp(async (V) => {
       }
     },
     async (req) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body = <any>req.body
       const user = await users.findOne(
         { login: body.login },

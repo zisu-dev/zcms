@@ -6,13 +6,11 @@ interface InjectInfo<T> {
   executed: boolean
   callbacks: {
     resolve: (value: T) => void
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reject: (reason: any) => void
   }[]
 }
 
 export class DI {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static infos = new Map<symbol, InjectInfo<any>>()
 
   static step<T>(key: symbol, provider: () => Promise<T>): void {

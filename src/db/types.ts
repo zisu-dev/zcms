@@ -2,19 +2,31 @@ import { ObjectId } from 'mongodb'
 
 export interface IMetaDoc {
   _id: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
 }
 
-export interface IContentDoc {
+export interface ITagEmbeddedDoc {
   _id: ObjectId
+  title: string
+}
+
+export interface IUserEmbeddedDoc {
+  _id: ObjectId
+  name: string
+  email: string
+}
+
+export interface IPostDoc {
+  _id: ObjectId
+  priority: number
+  slug: string
   title: string
   content: string
   summary: string
   created: Date
   updated: Date
-  tags: ObjectId[]
-  author: ObjectId
+  tags: ITagEmbeddedDoc[]
+  author: IUserEmbeddedDoc
 }
 
 export interface ITagDoc {
