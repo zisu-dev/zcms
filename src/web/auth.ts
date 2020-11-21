@@ -1,7 +1,7 @@
 import S from 'fluent-schema'
 import fp from 'fastify-plugin'
 import fastifyJwt from 'fastify-jwt'
-import { Db, ObjectId } from 'mongodb'
+import { Db } from 'mongodb'
 import { IMetaDoc, IUserDoc } from '../db'
 import {
   DI,
@@ -22,15 +22,21 @@ export const authPlugin = fp(async (V) => {
   const jwtMeta = (await metas.findOne({ _id: S_KEY_JWT_SECRET }))!
   V.register(fastifyJwt, { secret: jwtMeta.value })
 
+  V.addHook('preValidation', async (req) => {
+    if ('authorization' in req.headers) {
+      const r = <any>await req.jwtVerify()
+      if (!r._id || typeof r._id !== 'string') throw V.httpErrors.forbidden()
+      const user = await users.findOne(
+        { _id: r._id },
+        { projection: { pass: 0 } }
+      )
+      if (!user) throw V.httpErrors.forbidden()
+      req['ctx:user'] = user
+    }
+  })
+
   V.decorate('auth:login', async (req: FastifyRequest) => {
-    const r = <any>await req.jwtVerify()
-    if (!r._id) throw V.httpErrors.forbidden()
-    const user = await users.findOne(
-      { _id: new ObjectId(r._id) },
-      { projection: { pass: 0 } }
-    )
-    if (!user) throw V.httpErrors.forbidden()
-    req['ctx:user'] = user
+    if (!req['ctx:user']) throw V.httpErrors.forbidden()
   })
 
   V.decorate('auth:admin', async (req: FastifyRequest) => {
@@ -47,7 +53,7 @@ export const authPlugin = fp(async (V) => {
     async (req) => {
       const body = <any>req.body
       const user = await users.findOne(
-        { login: body.login },
+        { _id: body.login },
         { projection: { pass: 1 } }
       )
       notNull(user)
