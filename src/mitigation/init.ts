@@ -1,13 +1,14 @@
-import { IMetaDoc, IUserDoc } from '../db'
+import { IMetaDoc, IPostDoc, ITagDoc, IUserDoc } from '../db'
 import { logger } from '../log'
 import {
   DI,
   generatePasswordPair,
-  getClient,
   getDb,
   K_APP_INIT,
   randomBytesAsync,
   S_COL_META,
+  S_COL_POST,
+  S_COL_TAG,
   S_COL_USER,
   S_KEY_DB_VERSION,
   S_KEY_JWT_SECRET,
@@ -28,8 +29,8 @@ DI.step(K_APP_INIT, async () => {
   }
 
   logger.info('DB is clear')
-  const metas = db.collection<IMetaDoc>(S_COL_META)
-  await metas.insertMany([
+  const Metas = db.collection<IMetaDoc>(S_COL_META)
+  await Metas.insertMany([
     {
       _id: S_KEY_DB_VERSION,
       value: __package.version
@@ -40,11 +41,11 @@ DI.step(K_APP_INIT, async () => {
     }
   ])
 
-  const users = db.collection<IUserDoc>(S_COL_USER)
-  await users.createIndex('login', { unique: true })
-  await users.createIndex('email', { unique: true })
+  const Users = db.collection<IUserDoc>(S_COL_USER)
+  await Users.createIndex('login', { unique: true })
+  await Users.createIndex('email', { unique: true })
 
-  const r = await users.insertOne({
+  const r = await Users.insertOne({
     login: DEFAULT_ADMIN_NAME,
     name: DEFAULT_ADMIN_NAME,
     email: DEFAULT_ADMIN_EMAIL,
@@ -56,5 +57,11 @@ DI.step(K_APP_INIT, async () => {
   logger.info(
     `Created admin user [${r.insertedId}] name=${DEFAULT_ADMIN_NAME} pass=${DEFAULT_ADMIN_PASS}`
   )
+
+  const Posts = db.collection<IPostDoc>(S_COL_POST)
+  await Posts.createIndex('slug', { unique: true })
+
+  const Tags = db.collection<ITagDoc>(S_COL_TAG)
+  await Tags.createIndex('slug', { unique: true })
   logger.info('Initialize done')
 })

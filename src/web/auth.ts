@@ -16,17 +16,17 @@ import { FastifyRequest } from 'fastify'
 
 export const authPlugin = fp(async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
-  const metas = db.collection<IMetaDoc>(S_COL_META)
-  const users = db.collection<IUserDoc>(S_COL_USER)
+  const Metas = db.collection<IMetaDoc>(S_COL_META)
+  const Users = db.collection<IUserDoc>(S_COL_USER)
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const jwtMeta = (await metas.findOne({ _id: S_KEY_JWT_SECRET }))!
+  const jwtMeta = (await Metas.findOne({ _id: S_KEY_JWT_SECRET }))!
   V.register(fastifyJwt, { secret: jwtMeta.value })
 
   V.addHook('preValidation', async (req) => {
     if ('authorization' in req.headers) {
       const r = <any>await req.jwtVerify()
       if (!r._id || typeof r._id !== 'string') throw V.httpErrors.forbidden()
-      const user = await users.findOne(
+      const user = await Users.findOne(
         { _id: new ObjectId(r._id) },
         { projection: { pass: 0 } }
       )
@@ -52,7 +52,7 @@ export const authPlugin = fp(async (V) => {
     },
     async (req) => {
       const body = <any>req.body
-      const user = await users.findOne(
+      const user = await Users.findOne(
         { login: body.login },
         { projection: { pass: 1 } }
       )
