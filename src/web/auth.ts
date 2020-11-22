@@ -1,7 +1,7 @@
 import S from 'fluent-schema'
 import fp from 'fastify-plugin'
 import fastifyJwt from 'fastify-jwt'
-import { Db } from 'mongodb'
+import { Db, ObjectId } from 'mongodb'
 import { IMetaDoc, IUserDoc } from '../db'
 import {
   DI,
@@ -27,7 +27,7 @@ export const authPlugin = fp(async (V) => {
       const r = <any>await req.jwtVerify()
       if (!r._id || typeof r._id !== 'string') throw V.httpErrors.forbidden()
       const user = await users.findOne(
-        { _id: r._id },
+        { _id: new ObjectId(r._id) },
         { projection: { pass: 0 } }
       )
       if (!user) throw V.httpErrors.forbidden()
@@ -53,7 +53,7 @@ export const authPlugin = fp(async (V) => {
     async (req) => {
       const body = <any>req.body
       const user = await users.findOne(
-        { _id: body.login },
+        { login: body.login },
         { projection: { pass: 1 } }
       )
       notNull(user)

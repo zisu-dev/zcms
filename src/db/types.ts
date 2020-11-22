@@ -7,11 +7,12 @@ export interface IMetaDoc {
 
 export interface ITagEmbeddedDoc {
   _id: ObjectId
+  slug: string
   title: string
 }
 
 export interface IUserEmbeddedDoc {
-  _id: string
+  _id: ObjectId
   name: string
   email: string
 }
@@ -25,7 +26,7 @@ export interface IPostDoc {
   summary: string
   published: Date
   public: boolean
-  tags: string[]
+  tags: ITagEmbeddedDoc[]
   author: IUserEmbeddedDoc
 }
 
@@ -35,7 +36,8 @@ export interface IUserPass {
 }
 
 export interface IUserDoc {
-  _id: string
+  _id: ObjectId
+  login: string
   name: string
   email: string
   pass: IUserPass
@@ -43,4 +45,10 @@ export interface IUserDoc {
     admin?: boolean
     comment?: boolean
   }
+}
+
+export interface ITagDoc {
+  _id: ObjectId
+  slug: string
+  title: string
 }

@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
-import { Db, UpdateQuery } from 'mongodb'
+import { Db, ObjectId, UpdateQuery } from 'mongodb'
 import { IPostDoc, IUserDoc } from '../db'
 import {
   DI,
@@ -55,14 +55,11 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
       preValidation: [V['auth:login']]
     },
     async (req) => {
-      const _id = (<any>req.params).id
+      const _id = new ObjectId((<any>req.params).id)
       if (req['ctx:user']._id !== _id) throw V.httpErrors.forbidden()
 
       const body = <any>req.body
       const update: UpdateQuery<IUserDoc> = {
-        $set: {}
-      }
-      const postUpdate: UpdateQuery<IPostDoc> = {
         $set: {}
       }
       if ('name' in body) {
@@ -70,19 +67,11 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
           ...update.$set,
           name: body.name
         }
-        postUpdate.$set = {
-          ...postUpdate.$set,
-          'author.name': body.name
-        }
       }
       if ('email' in body) {
         update.$set = {
           ...update.$set,
           email: body.email
-        }
-        postUpdate.$set = {
-          ...postUpdate.$set,
-          'author.email': body.email
         }
       }
       if ('pass' in body) {
@@ -92,9 +81,17 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
         }
       }
 
-      await Users.updateOne({ _id }, update)
-      if ('name' in body || 'email' in body) {
-        await Posts.updateMany({ 'author._id': _id }, postUpdate)
+      const { value: user } = await Users.findOneAndUpdate({ _id }, update)
+      if (req['ctx:user'].perm.admin) {
+        // Only admin user can create post
+        if (user) {
+          await Posts.updateMany(
+            { 'author._id': _id },
+            { $set: { 'author.name': user.name, 'author.email': user.email } }
+          )
+        } else {
+          throw V.httpErrors.internalServerError()
+        }
       }
       return true
     }

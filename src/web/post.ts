@@ -1,12 +1,13 @@
 import { FastifyPluginAsync } from 'fastify'
 import { Db, FilterQuery, ObjectId, UpdateQuery } from 'mongodb'
-import { IPostDoc } from '../db'
-import { DI, K_DB, S_COL_POST } from '../utils'
+import { IPostDoc, ITagDoc } from '../db'
+import { DI, K_DB, S_COL_POST, S_COL_TAG } from '../utils'
 import { ObjectIdParamsSchema, S } from './common'
 
 export const postPlugin: FastifyPluginAsync = async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
   const Posts = db.collection<IPostDoc>(S_COL_POST)
+  const Tags = db.collection<ITagDoc>(S_COL_TAG)
 
   V.get(
     '/',
@@ -102,6 +103,63 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
       }
 
       await Posts.updateOne({ _id: new ObjectId((<any>req.params).id) }, update)
+      return true
+    }
+  )
+
+  V.delete(
+    '/:id',
+    {
+      schema: { params: S.object().prop('id', S.string()) },
+      preValidation: [V['auth:login'], V['auth:admin']]
+    },
+    async (req) => {
+      const _id = new ObjectId((<any>req.params).id)
+      await Posts.deleteOne({ _id })
+      return true
+    }
+  )
+
+  V.put(
+    '/:id/tag/:tagId',
+    {
+      schema: {
+        params: S.object().prop('id', S.string()).prop('tagId', S.string())
+      },
+      preValidation: [V['auth:login'], V['auth:admin']]
+    },
+    async (req) => {
+      const _id = new ObjectId((<any>req.params).id)
+      const _tagId = new ObjectId((<any>req.params).tagId)
+      const post = await Posts.findOne({ _id }, { projection: { tags: 1 } })
+      if (!post) throw V.httpErrors.notFound()
+      if (post.tags.some((x) => x._id.equals(_tagId))) return false
+      const tag = await Tags.findOne({ _id: _tagId })
+      if (!tag) throw V.httpErrors.notFound()
+      await Posts.updateOne(
+        { _id },
+        { $push: { tags: { _id: _tagId, slug: tag.slug, title: tag.title } } }
+      )
+      return true
+    }
+  )
+
+  V.delete(
+    '/:id/tag/:tagId',
+    {
+      schema: {
+        params: S.object().prop('id', S.string()).prop('tagId', S.string())
+      },
+      preValidation: [V['auth:login'], V['auth:admin']]
+    },
+    async (req) => {
+      const _id = new ObjectId((<any>req.params).id)
+      const _tagId = new ObjectId((<any>req.params).tagId)
+      const post = await Posts.findOne({ _id }, { projection: { tags: 1 } })
+      if (!post) throw V.httpErrors.notFound()
+      if (!post.tags.some((x) => x._id.equals(_tagId)))
+        throw V.httpErrors.notFound()
+      await Posts.updateOne({ _id }, { $pull: { tags: { _id: _tagId } } })
       return true
     }
   )
