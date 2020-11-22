@@ -1,6 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
 import { Db, ObjectId, UpdateQuery } from 'mongodb'
-import { title } from 'process'
 import { IPostDoc, ITagDoc } from '../db'
 import { DI, K_DB, S_COL_POST, S_COL_TAG } from '../utils'
 import { S } from './common'
@@ -52,11 +51,7 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
       const _id = new ObjectId(params.id)
 
       const update: UpdateQuery<ITagDoc> = {
-        $set: {}
-      }
-      if ('title' in body) {
-        // @ts-expect-error
-        update.$set.title = title
+        $set: body
       }
       const { value: tag } = await Tags.findOneAndUpdate({ _id }, update, {
         returnOriginal: false
@@ -66,8 +61,31 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
           { 'tags._id': _id },
           { $set: { 'tags.$.slug': tag.slug, 'tags.$.title': tag.title } }
         )
+        return true
       } else {
         throw V.httpErrors.internalServerError()
+      }
+    }
+  )
+
+  V.delete(
+    '/:id',
+    {
+      schema: {
+        params: S.object().prop('id', S.string())
+      },
+      preValidation: [V['auth:login'], V['auth:admin']]
+    },
+    async (req) => {
+      const { params } = <any>req
+      const _id = new ObjectId(params.id)
+
+      const { value: tag } = await Tags.findOneAndDelete({ _id })
+      if (tag) {
+        await Posts.updateMany({}, { $pull: { tags: { _id } } })
+        return true
+      } else {
+        throw V.httpErrors.notFound()
       }
     }
   )

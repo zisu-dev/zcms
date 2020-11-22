@@ -16,7 +16,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
   const Posts = db.collection<IPostDoc>(S_COL_POST)
 
   V.get(
-    '/list',
+    '/',
     { preValidation: [V['auth:login'], V['auth:admin']] },
     async () => {
       const users = await Users.find({}, { projection: { pass: 0 } }).toArray()
@@ -81,7 +81,9 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
         }
       }
 
-      const { value: user } = await Users.findOneAndUpdate({ _id }, update)
+      const { value: user } = await Users.findOneAndUpdate({ _id }, update, {
+        returnOriginal: false
+      })
       if (req['ctx:user'].perm.admin) {
         // Only admin user can create post
         if (user) {

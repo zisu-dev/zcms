@@ -46,7 +46,6 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
           .prop('summary', S.string().required())
           .prop('published', S.integer().required())
           .prop('public', S.boolean().required())
-          .prop('tags', S.array().items(S.string()).required())
       },
       preValidation: [V['auth:login'], V['auth:admin']]
     },
@@ -60,7 +59,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
         summary: body.summary,
         published: new Date(body.published),
         public: body.public,
-        tags: body.tags,
+        tags: [],
         author: {
           _id: req['ctx:user']._id,
           name: req['ctx:user'].name,
@@ -91,7 +90,6 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
           .prop('summary', S.string())
           .prop('published', S.integer())
           .prop('public', S.boolean())
-          .prop('tags', S.array().items(S.string()))
       },
       preValidation: [V['auth:login'], V['auth:admin']]
     },
