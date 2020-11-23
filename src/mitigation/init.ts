@@ -41,7 +41,7 @@ DI.step(K_APP_INIT, async () => {
   await Users.createIndex('email', { unique: true })
 
   const r = await Users.insertOne({
-    login: DEFAULT_ADMIN_NAME,
+    slug: DEFAULT_ADMIN_NAME,
     name: DEFAULT_ADMIN_NAME,
     email: DEFAULT_ADMIN_EMAIL,
     pass: await generatePasswordPair(DEFAULT_ADMIN_PASS),

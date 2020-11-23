@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify'
 import { Db, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, ITagDoc } from '../db'
 import { DI, K_DB } from '../utils'
-import { S } from './common'
+import { ObjectIdOrSlugSchema, S } from './common'
 
 export const tagPlugin: FastifyPluginAsync = async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
@@ -36,6 +36,21 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
         title: title
       })
       return r.insertedId
+    }
+  )
+
+  V.get(
+    '/:idOrSlug',
+    { schema: { params: ObjectIdOrSlugSchema } },
+    async (req) => {
+      const { params } = <any>req
+      const tag = await Tags.findOne(
+        ObjectId.isValid(params.idOrSlug)
+          ? { _id: new ObjectId(params.idOrSlug) }
+          : { slug: params.idOrSlug }
+      )
+      if (!tag) throw V.httpErrors.notFound()
+      return tag
     }
   )
 

@@ -42,9 +42,9 @@ export const authPlugin = fp(async (V) => {
       }
     },
     async (req) => {
-      const body = <any>req.body
+      const { body } = <any>req
       const user = await Users.findOne(
-        { login: body.login },
+        { $or: [{ slug: body.login }, { email: body.login }] },
         { projection: { pass: 1 } }
       )
       notNull(user)

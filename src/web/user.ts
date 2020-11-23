@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify'
 import { Db, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, IUserDoc } from '../db'
 import { DI, generatePasswordPair, K_DB } from '../utils'
-import { S, UserIdParamsSchema } from './common'
+import { ObjectIdOrSlugSchema, ObjectIdSchema, S } from './common'
 
 export const userPlugin: FastifyPluginAsync = async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
@@ -21,14 +21,15 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     '/:id',
     {
       schema: {
-        params: UserIdParamsSchema
+        params: ObjectIdOrSlugSchema
       }
     },
     async (req) => {
+      const { params } = <any>req
       const user = await Users.findOne(
-        {
-          _id: (<any>req.params).id
-        },
+        ObjectId.isValid(params.idOrSlug)
+          ? { _id: new ObjectId(params.idOrSlug) }
+          : { slug: params.idOrSlug },
         { projection: { pass: 0 } }
       )
       return user
@@ -39,7 +40,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     '/:id',
     {
       schema: {
-        params: UserIdParamsSchema,
+        params: ObjectIdSchema,
         body: S.object()
           .prop('name', S.string().minLength(3).maxLength(20))
           .prop('email', S.string().pattern(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/))
@@ -48,10 +49,10 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
       preValidation: [V['auth:login']]
     },
     async (req) => {
-      const _id = new ObjectId((<any>req.params).id)
+      const { params, body } = <any>req
+      const _id = new ObjectId(params.id)
       if (req['ctx:user']._id !== _id) throw V.httpErrors.forbidden()
 
-      const body = <any>req.body
       const update: UpdateQuery<IUserDoc> = {
         $set: {}
       }

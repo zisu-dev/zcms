@@ -37,7 +37,7 @@ export interface IUserPass {
 
 export interface IUserDoc {
   _id: ObjectId
-  login: string
+  slug: string
   name: string
   email: string
   pass: IUserPass
