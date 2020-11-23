@@ -10,7 +10,10 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
 
   V.get('/', async (req) => {
     const tags = await Tags.find().toArray()
-    return tags
+    return {
+      items: tags,
+      total: tags.length
+    }
   })
 
   V.post(

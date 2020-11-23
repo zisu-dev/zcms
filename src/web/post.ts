@@ -13,23 +13,33 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     {
       schema: {
         querystring: S.object()
-          .prop('offset', S.integer().required())
-          .prop('limit', S.integer().minimum(1).maximum(50).required())
+          .prop('page', S.integer().minimum(1).required())
+          .prop('per_page', S.integer().minimum(1).maximum(50).required())
       }
     },
     async (req) => {
-      const offset: number = (<any>req.query).offset
-      const limit: number = (<any>req.query).limit
+      const {
+        query: { page, per_page }
+      } = <any>req
+
       const query: FilterQuery<IPostDoc> = {}
       if (!('ctx:user' in req) || !req['ctx:user'].perm.admin) {
         query.public = true
       }
+      const total = await Posts.countDocuments(query)
+      const skip = (page - 1) * per_page
+      if (skip >= total) throw V.httpErrors.notFound()
+
       const posts = await Posts.find(query, {})
         .sort({ priority: -1, published: -1 })
-        .skip(offset)
-        .limit(limit)
+        .skip(skip)
+        .limit(per_page)
         .toArray()
-      return posts
+
+      return {
+        items: posts,
+        total
+      }
     }
   )
 

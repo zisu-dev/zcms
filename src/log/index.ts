@@ -1,4 +1,4 @@
 import pino from 'pino'
 import { __args } from '../utils'
 
-export const logger = pino({ prettyPrint: __args.verbose })
+export const logger = pino({ prettyPrint: __args.dev })
