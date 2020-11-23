@@ -18,7 +18,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
   )
 
   V.get(
-    '/:id',
+    '/:idOrSlug',
     {
       schema: {
         params: ObjectIdOrSlugSchema
@@ -32,6 +32,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
           : { slug: params.idOrSlug },
         { projection: { pass: 0 } }
       )
+      if (!user) throw V.httpErrors.notFound()
       return user
     }
   )
