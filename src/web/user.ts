@@ -1,19 +1,12 @@
 import { FastifyPluginAsync } from 'fastify'
 import { Db, ObjectId, UpdateQuery } from 'mongodb'
-import { IPostDoc, IUserDoc } from '../db'
-import {
-  DI,
-  generatePasswordPair,
-  K_DB,
-  S_COL_POST,
-  S_COL_USER
-} from '../utils'
+import { getCollections, IUserDoc } from '../db'
+import { DI, generatePasswordPair, K_DB } from '../utils'
 import { S, UserIdParamsSchema } from './common'
 
 export const userPlugin: FastifyPluginAsync = async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
-  const Users = db.collection<IUserDoc>(S_COL_USER)
-  const Posts = db.collection<IPostDoc>(S_COL_POST)
+  const { Users, Posts } = getCollections(db)
 
   V.get(
     '/',

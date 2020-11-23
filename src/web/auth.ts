@@ -2,22 +2,13 @@ import S from 'fluent-schema'
 import fp from 'fastify-plugin'
 import fastifyJwt from 'fastify-jwt'
 import { Db, ObjectId } from 'mongodb'
-import { IMetaDoc, IUserDoc } from '../db'
-import {
-  DI,
-  K_DB,
-  notNull,
-  S_COL_META,
-  S_COL_USER,
-  S_KEY_JWT_SECRET,
-  verifyPassword
-} from '../utils'
+import { DI, K_DB, notNull, S_KEY_JWT_SECRET, verifyPassword } from '../utils'
 import { FastifyRequest } from 'fastify'
+import { getCollections } from '../db'
 
 export const authPlugin = fp(async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
-  const Metas = db.collection<IMetaDoc>(S_COL_META)
-  const Users = db.collection<IUserDoc>(S_COL_USER)
+  const { Metas, Users } = getCollections(db)
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const jwtMeta = (await Metas.findOne({ _id: S_KEY_JWT_SECRET }))!
   V.register(fastifyJwt, { secret: jwtMeta.value })

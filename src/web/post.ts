@@ -1,13 +1,12 @@
 import { FastifyPluginAsync } from 'fastify'
 import { Db, FilterQuery, ObjectId, UpdateQuery } from 'mongodb'
-import { IPostDoc, ITagDoc } from '../db'
-import { DI, K_DB, S_COL_POST, S_COL_TAG } from '../utils'
+import { getCollections, IPostDoc } from '../db'
+import { DI, K_DB } from '../utils'
 import { ObjectIdParamsSchema, S } from './common'
 
 export const postPlugin: FastifyPluginAsync = async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
-  const Posts = db.collection<IPostDoc>(S_COL_POST)
-  const Tags = db.collection<ITagDoc>(S_COL_TAG)
+  const { Posts, Tags } = getCollections(db)
 
   V.get(
     '/',

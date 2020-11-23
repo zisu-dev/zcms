@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { Db, ObjectId } from 'mongodb'
 
 export interface IMetaDoc {
   _id: string
@@ -51,4 +51,13 @@ export interface ITagDoc {
   _id: ObjectId
   slug: string
   title: string
+}
+
+export function getCollections(db: Db) {
+  return {
+    Metas: db.collection<IMetaDoc>('meta'),
+    Posts: db.collection<IPostDoc>('post'),
+    Users: db.collection<IUserDoc>('user'),
+    Tags: db.collection<ITagDoc>('tag')
+  }
 }

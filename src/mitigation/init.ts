@@ -1,4 +1,4 @@
-import { IMetaDoc, IPostDoc, ITagDoc, IUserDoc } from '../db'
+import { getCollections } from '../db'
 import { logger } from '../log'
 import {
   DI,
@@ -6,10 +6,6 @@ import {
   getDb,
   K_APP_INIT,
   randomBytesAsync,
-  S_COL_META,
-  S_COL_POST,
-  S_COL_TAG,
-  S_COL_USER,
   S_KEY_DB_VERSION,
   S_KEY_JWT_SECRET,
   __package
@@ -29,7 +25,7 @@ DI.step(K_APP_INIT, async () => {
   }
 
   logger.info('DB is clear')
-  const Metas = db.collection<IMetaDoc>(S_COL_META)
+  const { Metas, Users, Posts, Tags } = getCollections(db)
   await Metas.insertMany([
     {
       _id: S_KEY_DB_VERSION,
@@ -41,7 +37,6 @@ DI.step(K_APP_INIT, async () => {
     }
   ])
 
-  const Users = db.collection<IUserDoc>(S_COL_USER)
   await Users.createIndex('login', { unique: true })
   await Users.createIndex('email', { unique: true })
 
@@ -58,10 +53,8 @@ DI.step(K_APP_INIT, async () => {
     `Created admin user [${r.insertedId}] name=${DEFAULT_ADMIN_NAME} pass=${DEFAULT_ADMIN_PASS}`
   )
 
-  const Posts = db.collection<IPostDoc>(S_COL_POST)
   await Posts.createIndex('slug', { unique: true })
 
-  const Tags = db.collection<ITagDoc>(S_COL_TAG)
   await Tags.createIndex('slug', { unique: true })
   logger.info('Initialize done')
 })

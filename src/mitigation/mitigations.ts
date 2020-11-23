@@ -1,8 +1,8 @@
 import * as semver from 'semver'
-import { getClient, getDb, S_COL_META, S_KEY_DB_VERSION } from '../utils'
+import { getClient, getDb, S_KEY_DB_VERSION } from '../utils'
 import { logger } from '../log'
 import { DI, K_APP_MITIGATION } from '../utils'
-import { IMetaDoc } from '../db'
+import { getCollections } from '../db'
 import { Db, MongoClient } from 'mongodb'
 
 type MitigationFn = (client: MongoClient, db: Db) => Promise<void>
@@ -12,7 +12,7 @@ const mitigations = new Map<string, MitigationFn>()
 DI.step(K_APP_MITIGATION, async () => {
   const client = await getClient()
   const db = await getDb()
-  const Metas = db.collection<IMetaDoc>(S_COL_META)
+  const { Metas } = getCollections(db)
 
   const M = [...mitigations.entries()]
   M.sort((a, b) => semver.compare(a[0], b[0]))
