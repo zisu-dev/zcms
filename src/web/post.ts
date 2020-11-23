@@ -113,6 +113,11 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     async (req) => {
       const { body, params } = <any>req
 
+      if (Object.keys(body).length <= 0) throw V.httpErrors.badRequest()
+      if ('published' in body) {
+        body.published = new Date(body.published)
+      }
+
       const update: UpdateQuery<IPostDoc> = {
         $set: body
       }

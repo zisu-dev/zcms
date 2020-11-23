@@ -67,6 +67,8 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
       const { params, body } = <any>req
       const _id = new ObjectId(params.id)
 
+      if (Object.keys(body).length <= 0) throw V.httpErrors.badRequest()
+
       const update: UpdateQuery<ITagDoc> = {
         $set: body
       }
