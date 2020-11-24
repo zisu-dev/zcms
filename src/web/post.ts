@@ -15,16 +15,23 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
         querystring: S.object()
           .prop('page', S.integer().minimum(1).required())
           .prop('per_page', S.integer().minimum(1).maximum(50).required())
+          .prop('search', S.string().minLength(1).maxLength(128))
+          .prop('tag', S.string().minLength(1))
       }
     },
     async (req) => {
-      const {
-        query: { page, per_page }
-      } = <any>req
+      const { query: qs } = <any>req
+      const { page, per_page } = qs
 
       const query: FilterQuery<IPostDoc> = {}
       if (!('ctx:user' in req) || !req['ctx:user'].perm.admin) {
         query.public = true
+      }
+      if ('search' in qs) {
+        query.content = new RegExp(qs.search)
+      }
+      if ('tag' in qs) {
+        query['tags._id'] = new ObjectId(qs.tag)
       }
       const total = await Posts.countDocuments(query)
       const skip = (page - 1) * per_page
