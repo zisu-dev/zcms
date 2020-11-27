@@ -38,6 +38,7 @@
     "lint": "yarn eslint && yarn prettier --check .",
     "lint:fix": "yarn eslint --fix && yarn prettier --write .",
     "build": "yarn tsc",
-    "build:watch": "yarn tsc --watch"
+    "build:watch": "yarn tsc --watch",
+    "dev": "node . --dev"
   }
 }

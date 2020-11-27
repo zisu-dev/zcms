@@ -5,6 +5,7 @@ import { Db, ObjectId } from 'mongodb'
 import { DI, K_DB, notNull, S_KEY_JWT_SECRET, verifyPassword } from '../utils'
 import { FastifyRequest } from 'fastify'
 import { getCollections } from '../db'
+import { UserDTO } from './common'
 
 export const authPlugin = fp(async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
@@ -38,23 +39,38 @@ export const authPlugin = fp(async (V) => {
     '/login',
     {
       schema: {
-        body: S.object().prop('login', S.string()).prop('pass', S.string())
+        body: S.object().prop('login', S.string()).prop('pass', S.string()),
+        response: {
+          200: S.object().prop('user', UserDTO).prop('token', S.string())
+        }
       }
     },
     async (req) => {
       const { body } = <any>req
-      const user = await Users.findOne(
-        { $or: [{ slug: body.login }, { email: body.login }] },
-        { projection: { pass: 1 } }
-      )
+      const user = await Users.findOne({
+        $or: [{ slug: body.login }, { email: body.login }]
+      })
       notNull(user)
       await verifyPassword(body.pass, user.pass)
       const token = V.jwt.sign({ _id: user._id })
-      return token
+      return { user, token }
     }
   )
 
-  V.get('/session', { preValidation: [V['auth:login']] }, async (req) => {
-    return req['ctx:user']
-  })
+  V.get(
+    '/session',
+    {
+      preValidation: [V['auth:login']],
+      schema: {
+        response: {
+          200: S.object().prop('user', UserDTO)
+        }
+      }
+    },
+    async (req) => {
+      return {
+        user: req['ctx:user']
+      }
+    }
+  )
 })

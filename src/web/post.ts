@@ -2,7 +2,13 @@ import { FastifyPluginAsync } from 'fastify'
 import { Db, FilterQuery, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, IPostDoc } from '../db'
 import { DI, K_DB } from '../utils'
-import { ObjectIdOrSlugSchema, ObjectIdSchema, S } from './common'
+import {
+  ObjectIdOrSlugSchema,
+  ObjectIdSchema,
+  paginationResult,
+  PostDTO,
+  S
+} from './common'
 
 export const postPlugin: FastifyPluginAsync = async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
@@ -16,7 +22,10 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
           .prop('page', S.integer().minimum(1).required())
           .prop('per_page', S.integer().minimum(1).maximum(50).required())
           .prop('search', S.string().minLength(1).maxLength(128))
-          .prop('tag', S.string().minLength(1))
+          .prop('tag', S.string().minLength(1)),
+        response: {
+          200: paginationResult(PostDTO)
+        }
       }
     },
     async (req) => {
@@ -37,7 +46,9 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
       const skip = (page - 1) * per_page
       if (skip && skip >= total) throw V.httpErrors.notFound()
 
-      const posts = await Posts.find(query, {})
+      const posts = await Posts.find(query, {
+        projection: { content: 0 }
+      })
         .sort({ priority: -1, published: -1 })
         .skip(skip)
         .limit(per_page)
@@ -58,8 +69,8 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
           .prop('priority', S.integer().required())
           .prop('slug', S.string().required())
           .prop('title', S.string().required())
-          .prop('content', S.string().required())
           .prop('summary', S.string().required())
+          .prop('content', S.string().required())
           .prop('published', S.integer().required())
           .prop('public', S.boolean().required())
       },
@@ -71,16 +82,11 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
         priority: body.priority,
         slug: body.slug,
         title: body.title,
-        content: body.content,
         summary: body.summary,
+        content: body.content,
         published: new Date(body.published),
         public: body.public,
-        tags: [],
-        author: {
-          _id: req['ctx:user']._id,
-          name: req['ctx:user'].name,
-          email: req['ctx:user'].email
-        }
+        tags: []
       })
       return r.insertedId
     }
@@ -88,7 +94,12 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
 
   V.get(
     '/:idOrSlug',
-    { schema: { params: ObjectIdOrSlugSchema } },
+    {
+      schema: {
+        params: ObjectIdOrSlugSchema,
+        response: { 200: PostDTO }
+      }
+    },
     async (req) => {
       const { params } = <any>req
       const post = await Posts.findOne(

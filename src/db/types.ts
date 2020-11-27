@@ -19,15 +19,14 @@ export interface IUserEmbeddedDoc {
 
 export interface IPostDoc {
   _id: ObjectId
-  priority: number
   slug: string
+  priority: number
   title: string
-  content: string
   summary: string
+  content: string
   published: Date
   public: boolean
   tags: ITagEmbeddedDoc[]
-  author: IUserEmbeddedDoc
 }
 
 export interface IUserPass {

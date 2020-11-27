@@ -2,19 +2,29 @@ import { FastifyPluginAsync } from 'fastify'
 import { Db, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, ITagDoc } from '../db'
 import { DI, K_DB } from '../utils'
-import { ObjectIdOrSlugSchema, S } from './common'
+import { ObjectIdOrSlugSchema, paginationResult, S, TagDTO } from './common'
 
 export const tagPlugin: FastifyPluginAsync = async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
   const { Posts, Tags } = getCollections(db)
 
-  V.get('/', async (req) => {
-    const tags = await Tags.find().toArray()
-    return {
-      items: tags,
-      total: tags.length
+  V.get(
+    '/',
+    {
+      schema: {
+        response: {
+          200: paginationResult(TagDTO)
+        }
+      }
+    },
+    async (req) => {
+      const tags = await Tags.find().toArray()
+      return {
+        items: tags,
+        total: tags.length
+      }
     }
-  })
+  )
 
   V.post(
     '/',
@@ -41,7 +51,14 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
 
   V.get(
     '/:idOrSlug',
-    { schema: { params: ObjectIdOrSlugSchema } },
+    {
+      schema: {
+        params: ObjectIdOrSlugSchema,
+        response: {
+          200: TagDTO
+        }
+      }
+    },
     async (req) => {
       const { params } = <any>req
       const tag = await Tags.findOne(

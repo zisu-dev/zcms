@@ -2,7 +2,13 @@ import { FastifyPluginAsync } from 'fastify'
 import { Db, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, IUserDoc } from '../db'
 import { DI, generatePasswordPair, K_DB } from '../utils'
-import { ObjectIdOrSlugSchema, ObjectIdSchema, S } from './common'
+import {
+  ObjectIdOrSlugSchema,
+  ObjectIdSchema,
+  paginationResult,
+  S,
+  UserDTO
+} from './common'
 
 export const userPlugin: FastifyPluginAsync = async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
@@ -10,10 +16,20 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
 
   V.get(
     '/',
-    { preValidation: [V['auth:login'], V['auth:admin']] },
+    {
+      preValidation: [V['auth:login'], V['auth:admin']],
+      schema: {
+        response: {
+          200: paginationResult(UserDTO)
+        }
+      }
+    },
     async () => {
       const users = await Users.find({}, { projection: { pass: 0 } }).toArray()
-      return users
+      return {
+        items: users,
+        total: users.length
+      }
     }
   )
 
@@ -21,7 +37,10 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     '/:idOrSlug',
     {
       schema: {
-        params: ObjectIdOrSlugSchema
+        params: ObjectIdOrSlugSchema,
+        response: {
+          200: UserDTO
+        }
       }
     },
     async (req) => {
@@ -79,17 +98,6 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
       const { value: user } = await Users.findOneAndUpdate({ _id }, update, {
         returnOriginal: false
       })
-      if (req['ctx:user'].perm.admin) {
-        // Only admin user can create post
-        if (user) {
-          await Posts.updateMany(
-            { 'author._id': _id },
-            { $set: { 'author.name': user.name, 'author.email': user.email } }
-          )
-        } else {
-          throw V.httpErrors.internalServerError()
-        }
-      }
       return true
     }
   )
