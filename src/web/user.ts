@@ -71,7 +71,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     async (req) => {
       const { params, body } = <any>req
       const _id = new ObjectId(params.id)
-      if (req['ctx:user']._id !== _id) throw V.httpErrors.forbidden()
+      if (!_id.equals(req['ctx:user']._id)) throw V.httpErrors.forbidden()
 
       const update: UpdateQuery<IUserDoc> = {
         $set: {}

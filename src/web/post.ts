@@ -33,7 +33,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
       const { page, per_page } = qs
 
       const query: FilterQuery<IPostDoc> = {}
-      if (!('ctx:user' in req) || !req['ctx:user'].perm.admin) {
+      if (req['ctx:user'] === null || !req['ctx:user'].perm.admin) {
         query.public = true
       }
       if ('search' in qs) {
