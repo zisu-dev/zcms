@@ -14,6 +14,16 @@ export const authPlugin = fp(async (V) => {
   const jwtMeta = (await Metas.findOne({ _id: S_KEY_JWT_SECRET }))!
   V.register(fastifyJwt, { secret: jwtMeta.value })
 
+  V.decorate('auth:login', async (req: FastifyRequest) => {
+    if (!req['ctx:user']) throw V.httpErrors.forbidden()
+  })
+
+  V.decorate('auth:admin', async (req: FastifyRequest) => {
+    if (!req['ctx:user'].perm.admin) throw V.httpErrors.forbidden()
+  })
+
+  V.decorateRequest('ctx:user', null)
+
   V.addHook('preValidation', async (req) => {
     if ('authorization' in req.headers) {
       const r = <any>await req.jwtVerify()
@@ -25,14 +35,6 @@ export const authPlugin = fp(async (V) => {
       if (!user) throw V.httpErrors.forbidden()
       req['ctx:user'] = user
     }
-  })
-
-  V.decorate('auth:login', async (req: FastifyRequest) => {
-    if (!req['ctx:user']) throw V.httpErrors.forbidden()
-  })
-
-  V.decorate('auth:admin', async (req: FastifyRequest) => {
-    if (!req['ctx:user'].perm.admin) throw V.httpErrors.forbidden()
   })
 
   V.post(

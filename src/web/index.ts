@@ -7,6 +7,8 @@ import { authPlugin } from './auth'
 import { postPlugin } from './post'
 import { tagPlugin } from './tag'
 import { userPlugin } from './user'
+import { noAdditionalProperties } from './no_additional_properties'
+import { adminPlugin } from './admin'
 
 DI.step(K_WEB, async () => {
   const server = fastify({
@@ -26,10 +28,12 @@ DI.step(K_WEB, async () => {
   }
   await server.register(fastifyCors, { origin: true, credentials: true })
   await server.register(fastifySensible)
+  await server.register(noAdditionalProperties)
   await server.register(authPlugin)
   await server.register(userPlugin, { prefix: '/user' })
   await server.register(postPlugin, { prefix: '/post' })
   await server.register(tagPlugin, { prefix: '/tag' })
+  await server.register(adminPlugin, { prefix: '/admin' })
   await server.listen(8010)
   return server
 })
