@@ -53,7 +53,9 @@ export const authPlugin = fp(async (V) => {
         $or: [{ slug: body.login }, { email: body.login }]
       })
       notNull(user)
-      await verifyPassword(body.pass, user.pass)
+      if (!(await verifyPassword(body.pass, user.pass))) {
+        throw V.httpErrors.forbidden()
+      }
       const token = V.jwt.sign({ _id: user._id })
       return { user, token }
     }
