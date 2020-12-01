@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
-import { Db, ObjectId, UpdateQuery } from 'mongodb'
+import { Db, FilterQuery, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, IUserDoc } from '../db'
 import { DI, generatePasswordPair, K_DB } from '../utils'
 import {
@@ -19,16 +19,30 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     {
       preValidation: [V['auth:login'], V['auth:admin']],
       schema: {
+        querystring: S.object()
+          .prop('page', S.integer().minimum(1).required())
+          .prop('per_page', S.integer().minimum(1).maximum(50).required()),
         response: {
           200: paginationResult(UserDTO)
         }
       }
     },
-    async () => {
-      const users = await Users.find({}, { projection: { pass: 0 } }).toArray()
+    async (req) => {
+      const { query: qs } = <any>req
+      const { page, per_page } = qs
+
+      const query: FilterQuery<IUserDoc> = {}
+      const total = await Posts.countDocuments(query)
+      const skip = (page - 1) * per_page
+      if (skip && skip >= total) throw V.httpErrors.notFound()
+
+      const users = await Users.find(query, { projection: { pass: 0 } })
+        .skip(skip)
+        .limit(per_page)
+        .toArray()
       return {
         items: users,
-        total: users.length
+        total: total
       }
     }
   )
