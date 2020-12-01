@@ -56,7 +56,12 @@ export const authPlugin = fp(async (V) => {
       if (!(await verifyPassword(body.pass, user.pass))) {
         throw V.httpErrors.forbidden()
       }
-      const token = V.jwt.sign({ _id: user._id })
+      const token = V.jwt.sign(
+        { _id: user._id },
+        {
+          expiresIn: '1d'
+        }
+      )
       return { user, token }
     }
   )

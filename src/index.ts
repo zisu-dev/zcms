@@ -8,7 +8,9 @@ import {
   K_APP_INIT,
   K_APP_MITIGATION,
   K_WEB,
+  randomBytesAsync,
   S_KEY_DB_VERSION,
+  S_KEY_JWT_SECRET,
   __args,
   __package
 } from './utils'
@@ -29,6 +31,13 @@ async function main() {
     'Database initialized. Version: ' +
       (await Metas.findOne({ _id: S_KEY_DB_VERSION }))?.value
   )
+
+  if (__args.revokeJwtSecret) {
+    logger.info('Revoking JWT Secret')
+    const key = await randomBytesAsync(32).then((b) => b.toString('base64'))
+    Metas.updateOne({ _id: S_KEY_JWT_SECRET }, { $set: { value: key } })
+    logger.info('JWT Secret revoked')
+  }
 
   await DI.waitFor(K_WEB)
   logger.error(`ZCMS version ${__package.version} started`)
