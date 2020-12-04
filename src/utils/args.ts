@@ -1,5 +1,6 @@
 import yargs from 'yargs'
 import dotenv from 'dotenv'
+import path from 'path'
 
 dotenv.config()
 
@@ -10,4 +11,5 @@ export const __args = yargs
   .option('revokeJwtSecret', { default: false })
   .option('dev', { default: false })
   .option('dbUrl', { type: 'string', default: 'mongodb://localhost:27017' })
+  .option('staticPath', { type: 'string', default: path.resolve(__dirname, '..', '..', 'static') })
   .argv
