@@ -18,7 +18,7 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
       }
     },
     async (req) => {
-      const tags = await Tags.find().toArray()
+      const tags = await Tags.find({}, { projection: { content: 0 } }).toArray()
       return {
         items: tags,
         total: tags.length
@@ -104,7 +104,7 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
         )
         return true
       } else {
-        throw V.httpErrors.internalServerError()
+        throw V.httpErrors.notFound()
       }
     }
   )
