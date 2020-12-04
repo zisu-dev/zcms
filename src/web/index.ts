@@ -16,6 +16,7 @@ DI.step(K_WEB, async () => {
   const server = fastify({
     logger
   })
+
   if (__args.dev) {
     await server.register(require('fastify-swagger'), {
       swagger: {
@@ -28,10 +29,18 @@ DI.step(K_WEB, async () => {
       exposeRoute: true
     })
   }
-  await server.register(fastifyCors, { origin: true, credentials: true })
+
+  const origin = __args.origin
+    .split(',')
+    .map((x) => x.trim())
+    .map((x) => (x.startsWith('regex:') ? new RegExp(x.substr(6)) : x))
+  logger.info('Allowed origins: ' + origin.join())
+  await server.register(fastifyCors, { origin, credentials: true })
+
   await server.register(fastifySensible)
   await server.register(noAdditionalProperties)
   await server.register(fastifyStatic, { root: __args.staticPath })
+
   await server.register(authPlugin)
   await server.register(userPlugin, { prefix: '/user' })
   await server.register(postPlugin, { prefix: '/post' })
