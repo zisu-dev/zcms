@@ -6,12 +6,9 @@ export const UserIdSchema = S.string()
   .maxLength(10)
   .pattern(/^[a-z_][a-z0-9_]+$/)
 
-export const ObjectIdSchema = S.object().prop('id', S.string().minLength(1))
+export const ObjectIdSchema = S.object().prop('id', S.string())
 
-export const ObjectIdOrSlugSchema = S.object().prop(
-  'idOrSlug',
-  S.string().minLength(1)
-)
+export const ObjectIdOrSlugSchema = S.object().prop('idOrSlug', S.string())
 
 export const UserDTO = S.object()
   .prop('_id', S.string())
@@ -27,6 +24,12 @@ export const TagDTO = S.object()
   .prop('_id', S.string())
   .prop('slug', S.string())
   .prop('title', S.string())
+  .prop('content', S.string())
+
+export const TagEmbeddedDTO = S.object()
+  .prop('_id', S.string())
+  .prop('slug', S.string())
+  .prop('title', S.string())
 
 export const PostDTO = S.object()
   .prop('_id', S.string())
@@ -37,7 +40,7 @@ export const PostDTO = S.object()
   .prop('content', S.string())
   .prop('published', S.number())
   .prop('public', S.boolean())
-  .prop('tags', S.array().items(TagDTO))
+  .prop('tags', S.array().items(TagEmbeddedDTO))
 
 export function paginationResult(type: ObjectSchema) {
   return S.object()

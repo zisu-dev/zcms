@@ -44,6 +44,7 @@ export interface ITagDoc {
   _id: ObjectId
   slug: string
   title: string
+  content: string
 }
 
 export function getCollections(db: Db) {

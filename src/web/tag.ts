@@ -33,17 +33,19 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
         body: S.object()
           .prop('slug', S.string().required())
           .prop('title', S.string().required())
+          .prop('content', S.string().required())
       },
       preValidation: [V['auth:login'], V['auth:admin']]
     },
     async (req) => {
       const {
-        body: { slug, title }
+        body: { slug, title, content }
       } = <any>req
 
       const r = await Tags.insertOne({
-        slug: slug,
-        title: title
+        slug,
+        title,
+        content
       })
       return r.insertedId
     }
@@ -76,7 +78,10 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
     {
       schema: {
         params: S.object().prop('id', S.string()),
-        body: S.object().prop('slug', S.string()).prop('title', S.string())
+        body: S.object()
+          .prop('slug', S.string())
+          .prop('title', S.string())
+          .prop('content', S.string())
       },
       preValidation: [V['auth:login'], V['auth:admin']]
     },

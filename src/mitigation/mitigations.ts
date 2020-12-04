@@ -36,3 +36,8 @@ function defineMitigation(version: string, fn: MitigationFn) {
 defineMitigation('0.0.0', async () => {
   logger.info('Nothing to mitigation')
 })
+
+defineMitigation('0.0.1', async (client, db) => {
+  const { Tags } = getCollections(db)
+  Tags.updateMany({}, { $set: { content: '' } })
+})
