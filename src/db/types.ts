@@ -11,16 +11,10 @@ export interface ITagEmbeddedDoc {
   title: string
 }
 
-export interface IUserEmbeddedDoc {
-  _id: ObjectId
-  name: string
-  email: string
-}
-
 export interface IPostDoc {
   _id: ObjectId
   slug: string
-  priority: number
+  priority: number // -1 For page, >= 0 for common post
   title: string
   summary: string
   content: string

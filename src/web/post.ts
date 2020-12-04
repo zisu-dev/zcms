@@ -32,8 +32,12 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
       const { query: qs } = <any>req
       const { page, per_page } = qs
 
-      const query: FilterQuery<IPostDoc> = {}
-      if (req['ctx:user'] === null || !req['ctx:user'].perm.admin) {
+      const query: FilterQuery<IPostDoc> = {
+        priority: {
+          $gte: 0
+        }
+      }
+      if (!req['ctx:user']?.perm.admin) {
         query.public = true
       }
       if ('search' in qs) {
@@ -66,7 +70,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     {
       schema: {
         body: S.object()
-          .prop('priority', S.integer().required())
+          .prop('priority', S.integer().minimum(-1).required())
           .prop('slug', S.string().required())
           .prop('title', S.string().required())
           .prop('summary', S.string().required())
@@ -102,12 +106,21 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     },
     async (req) => {
       const { params } = <any>req
-      const post = await Posts.findOne(
-        ObjectId.isValid(params.idOrSlug)
-          ? { _id: new ObjectId(params.idOrSlug) }
-          : { slug: params.idOrSlug }
-      )
-      if (!post) throw V.httpErrors.notFound()
+      const query: FilterQuery<IPostDoc> = {}
+      if (!req['ctx:user']?.perm.admin) {
+        query.public = true
+      }
+      if (ObjectId.isValid(params.idOrSlug)) {
+        query._id = new ObjectId(params.idOrSlug)
+      } else {
+        query.slug = params.idOrSlug
+      }
+
+      const post = await Posts.findOne(query)
+      if (!post) {
+        throw V.httpErrors.notFound()
+      }
+
       return post
     }
   )
@@ -118,7 +131,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
       schema: {
         params: ObjectIdSchema,
         body: S.object()
-          .prop('priority', S.integer())
+          .prop('priority', S.integer().minimum(-1))
           .prop('slug', S.string())
           .prop('title', S.string())
           .prop('content', S.string())
