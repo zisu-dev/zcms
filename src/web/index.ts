@@ -34,8 +34,11 @@ DI.step(K_WEB, async () => {
     .split(',')
     .map((x) => x.trim())
     .map((x) => (x.startsWith('regex:') ? new RegExp(x.substr(6)) : x))
-  logger.info('Allowed origins: ' + origin.join())
   if (origin.length === 1) origin = origin[0]
+  logger.info(
+    'Allowed origins: ' +
+      (origin instanceof Array ? `[${origin.join()}]` : origin)
+  )
   await server.register(fastifyCors, { origin, credentials: true })
 
   await server.register(fastifySensible)
