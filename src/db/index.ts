@@ -1,9 +1,9 @@
 import { MongoClient } from 'mongodb'
-import { DI, K_DB, K_DB_CLIENT } from '../utils'
+import { DI, K_DB, K_DB_CLIENT, __args } from '../utils'
 export * from './types'
 
 DI.step(K_DB_CLIENT, async () => {
-  const url = 'mongodb://localhost:27017'
+  const url = __args.dbUrl
 
   const client = new MongoClient(url, {
     useNewUrlParser: true,
