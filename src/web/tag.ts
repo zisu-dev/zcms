@@ -2,7 +2,13 @@ import { FastifyPluginAsync } from 'fastify'
 import { Db, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, ITagDoc } from '../db'
 import { DI, isObjectId, K_DB } from '../utils'
-import { ObjectIdOrSlugSchema, paginationResult, S, TagDTO } from './common'
+import {
+  ObjectIdOrSlugSchema,
+  ObjectIdSchema,
+  paginationResult,
+  S,
+  TagDTO
+} from './common'
 
 export const tagPlugin: FastifyPluginAsync = async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
@@ -77,7 +83,7 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
     '/:id',
     {
       schema: {
-        params: S.object().prop('id', S.string()),
+        params: ObjectIdSchema,
         body: S.object()
           .prop('slug', S.string())
           .prop('title', S.string())
@@ -112,9 +118,7 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
   V.delete(
     '/:id',
     {
-      schema: {
-        params: S.object().prop('id', S.string())
-      },
+      schema: { params: ObjectIdSchema },
       preValidation: [V['auth:login'], V['auth:admin']]
     },
     async (req) => {

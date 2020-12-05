@@ -37,8 +37,8 @@ DI.step(K_APP_INIT, async () => {
     }
   ])
 
-  await Users.createIndex('login', { unique: true })
-  await Users.createIndex('email', { unique: true })
+  await Users.createIndex('slug', { unique: true, name: 'slug' })
+  await Users.createIndex('email', { unique: true, name: 'email' })
 
   const r = await Users.insertOne({
     slug: DEFAULT_ADMIN_NAME,
@@ -53,8 +53,8 @@ DI.step(K_APP_INIT, async () => {
     `Created admin user [${r.insertedId}] name=${DEFAULT_ADMIN_NAME} pass=${DEFAULT_ADMIN_PASS}`
   )
 
-  await Posts.createIndex('slug', { unique: true })
+  await Posts.createIndex('slug', { unique: true, name: 'slug' })
 
-  await Tags.createIndex('slug', { unique: true })
+  await Tags.createIndex('slug', { unique: true, name: 'slug' })
   logger.info('Initialize done')
 })

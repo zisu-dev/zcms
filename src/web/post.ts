@@ -161,7 +161,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
   V.delete(
     '/:id',
     {
-      schema: { params: S.object().prop('id', S.string()) },
+      schema: { params: ObjectIdSchema },
       preValidation: [V['auth:login'], V['auth:admin']]
     },
     async (req) => {
@@ -176,7 +176,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     '/:id/tag/:tagId',
     {
       schema: {
-        params: S.object().prop('id', S.string()).prop('tagId', S.string())
+        params: ObjectIdSchema.prop('tagId', S.string())
       },
       preValidation: [V['auth:login'], V['auth:admin']]
     },
@@ -203,7 +203,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     '/:id/tag/:tagId',
     {
       schema: {
-        params: S.object().prop('id', S.string()).prop('tagId', S.string())
+        params: ObjectIdSchema.prop('tagId', S.string())
       },
       preValidation: [V['auth:login'], V['auth:admin']]
     },

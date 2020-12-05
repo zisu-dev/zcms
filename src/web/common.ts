@@ -6,7 +6,10 @@ export const UserIdSchema = S.string()
   .maxLength(10)
   .pattern(/^[a-z_][a-z0-9_]+$/)
 
-export const ObjectIdSchema = S.object().prop('id', S.string())
+export const ObjectIdSchema = S.object().prop(
+  'id',
+  S.string().minLength(24).maxLength(24).required()
+)
 
 export const ObjectIdOrSlugSchema = S.object().prop('idOrSlug', S.string())
 

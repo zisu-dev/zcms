@@ -70,6 +70,38 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     }
   )
 
+  V.post(
+    '/',
+    {
+      schema: {
+        body: S.object()
+          .prop('slug', S.string().minLength(3).required())
+          .prop('name', S.string().minLength(3).required())
+          .prop('email', S.string().required())
+          .prop(
+            'perm',
+            S.object().prop('admin', S.boolean()).prop('comment', S.boolean())
+          )
+          .prop('pwd', S.string().required())
+          .required(['perm'])
+      },
+      preValidation: [V['auth:login'], V['auth:admin']]
+    },
+    async (req) => {
+      const { body } = <any>req
+      const { slug, name, email, pwd, perm } = body
+      const pass = await generatePasswordPair(pwd)
+      const r = await Users.insertOne({
+        slug,
+        name,
+        email,
+        pass,
+        perm
+      })
+      return r.insertedId
+    }
+  )
+
   V.put(
     '/:id',
     {
@@ -113,6 +145,24 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
         returnOriginal: false
       })
       return true
+    }
+  )
+
+  V.delete(
+    '/:id',
+    {
+      schema: { params: ObjectIdSchema },
+      preValidation: [V['auth:login'], V['auth:admin']]
+    },
+    async (req) => {
+      const { params } = <any>req
+      const _id = new ObjectId(params.id)
+      const { value: user } = await Users.findOneAndDelete({ _id })
+      if (user) {
+        return true
+      } else {
+        throw V.httpErrors.notFound()
+      }
     }
   )
 }

@@ -41,7 +41,10 @@ export const authPlugin = fp(async (V) => {
     '/login',
     {
       schema: {
-        body: S.object().prop('login', S.string()).prop('pass', S.string()),
+        body: S.object()
+          .prop('login', S.string().required())
+          .prop('pass', S.string().required())
+          .prop('expires', S.enum(['1d', '1m']).default('1d')),
         response: {
           200: S.object().prop('user', UserDTO).prop('token', S.string())
         }
@@ -56,12 +59,7 @@ export const authPlugin = fp(async (V) => {
       if (!(await verifyPassword(body.pass, user.pass))) {
         throw V.httpErrors.forbidden()
       }
-      const token = V.jwt.sign(
-        { _id: user._id },
-        {
-          expiresIn: '1d'
-        }
-      )
+      const token = V.jwt.sign({ _id: user._id }, { expiresIn: body.expires })
       return { user, token }
     }
   )
