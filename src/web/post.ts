@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify'
 import { Db, FilterQuery, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, IPostDoc } from '../db'
-import { DI, K_DB } from '../utils'
+import { DI, isObjectId, K_DB } from '../utils'
 import {
   ObjectIdOrSlugSchema,
   ObjectIdSchema,
@@ -110,7 +110,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
       if (!req['ctx:user']?.perm.admin) {
         query.public = true
       }
-      if (ObjectId.isValid(params.idOrSlug)) {
+      if (isObjectId(params.idOrSlug)) {
         query._id = new ObjectId(params.idOrSlug)
       } else {
         query.slug = params.idOrSlug

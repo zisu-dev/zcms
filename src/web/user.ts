@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify'
 import { Db, FilterQuery, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, IUserDoc } from '../db'
-import { DI, generatePasswordPair, K_DB } from '../utils'
+import { DI, generatePasswordPair, isObjectId, K_DB } from '../utils'
 import {
   ObjectIdOrSlugSchema,
   ObjectIdSchema,
@@ -60,7 +60,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     async (req) => {
       const { params } = <any>req
       const user = await Users.findOne(
-        ObjectId.isValid(params.idOrSlug)
+        isObjectId(params.idOrSlug)
           ? { _id: new ObjectId(params.idOrSlug) }
           : { slug: params.idOrSlug },
         { projection: { pass: 0 } }

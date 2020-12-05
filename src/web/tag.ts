@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify'
 import { Db, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, ITagDoc } from '../db'
-import { DI, K_DB } from '../utils'
+import { DI, isObjectId, K_DB } from '../utils'
 import { ObjectIdOrSlugSchema, paginationResult, S, TagDTO } from './common'
 
 export const tagPlugin: FastifyPluginAsync = async (V) => {
@@ -64,7 +64,7 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
     async (req) => {
       const { params } = <any>req
       const tag = await Tags.findOne(
-        ObjectId.isValid(params.idOrSlug)
+        isObjectId(params.idOrSlug)
           ? { _id: new ObjectId(params.idOrSlug) }
           : { slug: params.idOrSlug }
       )
