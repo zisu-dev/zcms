@@ -80,10 +80,12 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
           .prop('email', S.string().required())
           .prop(
             'perm',
-            S.object().prop('admin', S.boolean()).prop('comment', S.boolean())
+            S.object()
+              .required()
+              .prop('admin', S.boolean())
+              .prop('comment', S.boolean())
           )
           .prop('pwd', S.string().required())
-          .required(['perm'])
       },
       preValidation: [V['auth:login'], V['auth:admin']]
     },
