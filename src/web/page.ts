@@ -29,7 +29,7 @@ export const pagePlugin: FastifyPluginAsync = async (V) => {
       const query: FilterQuery<IPostDoc> = {
         priority: -1
       }
-      if (!req['ctx:user']?.perm.admin) {
+      if (!req.ctx.user?.perm.admin) {
         query.public = true
       }
       if ('search' in qs) {

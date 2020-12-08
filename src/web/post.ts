@@ -37,7 +37,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
           $gte: 0
         }
       }
-      if (!req['ctx:user']?.perm.admin) {
+      if (!req.ctx.user?.perm.admin) {
         query.public = true
       }
       if ('search' in qs) {
@@ -78,7 +78,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
           .prop('published', S.integer().required())
           .prop('public', S.boolean().required())
       },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const { body } = <any>req
@@ -107,7 +107,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     async (req) => {
       const { params } = <any>req
       const query: FilterQuery<IPostDoc> = {}
-      if (!req['ctx:user']?.perm.admin) {
+      if (!req.ctx.user?.perm.admin) {
         query.public = true
       }
       if (isObjectId(params.idOrSlug)) {
@@ -139,7 +139,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
           .prop('published', S.integer())
           .prop('public', S.boolean())
       },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const { body, params } = <any>req
@@ -162,7 +162,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     '/:id',
     {
       schema: { params: ObjectIdSchema },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const { params } = <any>req
@@ -178,7 +178,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
       schema: {
         params: ObjectIdSchema.prop('tagId', S.string())
       },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const { params } = <any>req
@@ -205,7 +205,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
       schema: {
         params: ObjectIdSchema.prop('tagId', S.string())
       },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const { params } = <any>req

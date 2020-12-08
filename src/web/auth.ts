@@ -3,9 +3,24 @@ import fp from 'fastify-plugin'
 import fastifyJwt from 'fastify-jwt'
 import { Db, ObjectId } from 'mongodb'
 import { DI, K_DB, notNull, S_KEY_JWT_SECRET, verifyPassword } from '../utils'
-import { FastifyRequest } from 'fastify'
-import { getCollections } from '../db'
+import { FastifyRequest, preValidationHookHandler } from 'fastify'
+import { getCollections, IUserDoc } from '../db'
 import { UserDTO } from './common'
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    auth: {
+      login: preValidationHookHandler
+      admin: preValidationHookHandler
+    }
+  }
+
+  interface FastifyRequest {
+    ctx: {
+      user?: IUserDoc
+    }
+  }
+}
 
 export const authPlugin = fp(async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
@@ -14,16 +29,23 @@ export const authPlugin = fp(async (V) => {
   const jwtMeta = (await Metas.findOne({ _id: S_KEY_JWT_SECRET }))!
   V.register(fastifyJwt, { secret: jwtMeta.value })
 
-  V.decorate('auth:login', async (req: FastifyRequest) => {
-    if (!req['ctx:user']) throw V.httpErrors.forbidden()
+  V.decorate('auth', {
+    login: async (req: FastifyRequest) => {
+      if (!req.ctx.user) throw V.httpErrors.forbidden()
+    },
+    admin: async (req: FastifyRequest) => {
+      if (!req.ctx.user?.perm.admin) throw V.httpErrors.forbidden()
+    }
   })
 
-  V.decorate('auth:admin', async (req: FastifyRequest) => {
-    if (!req['ctx:user'].perm.admin) throw V.httpErrors.forbidden()
+  V.decorateRequest('ctx', null)
+
+  // Initialize context
+  V.addHook('preValidation', async (req) => {
+    req.ctx = {}
   })
 
-  V.decorateRequest('ctx:user', null)
-
+  // Parse authorization
   V.addHook('preValidation', async (req) => {
     if ('authorization' in req.headers) {
       const r = <any>await req.jwtVerify()
@@ -33,7 +55,7 @@ export const authPlugin = fp(async (V) => {
         { projection: { pass: 0 } }
       )
       if (!user) throw V.httpErrors.forbidden()
-      req['ctx:user'] = user
+      req.ctx.user = user
     }
   })
 
@@ -67,7 +89,7 @@ export const authPlugin = fp(async (V) => {
   V.get(
     '/session',
     {
-      preValidation: [V['auth:login']],
+      preValidation: [V.auth.login],
       schema: {
         response: {
           200: S.object().prop('user', UserDTO)
@@ -76,7 +98,7 @@ export const authPlugin = fp(async (V) => {
     },
     async (req) => {
       return {
-        user: req['ctx:user']
+        user: req.ctx.user
       }
     }
   )

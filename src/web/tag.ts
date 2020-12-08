@@ -41,7 +41,7 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
           .prop('title', S.string().required())
           .prop('content', S.string().required())
       },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const {
@@ -89,7 +89,7 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
           .prop('title', S.string())
           .prop('content', S.string())
       },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const { params, body } = <any>req
@@ -119,7 +119,7 @@ export const tagPlugin: FastifyPluginAsync = async (V) => {
     '/:id',
     {
       schema: { params: ObjectIdSchema },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const { params } = <any>req

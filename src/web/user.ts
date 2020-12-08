@@ -17,7 +17,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
   V.get(
     '/',
     {
-      preValidation: [V['auth:login'], V['auth:admin']],
+      preValidation: [V.auth.admin],
       schema: {
         querystring: S.object()
           .prop('page', S.integer().minimum(1).required())
@@ -87,7 +87,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
           )
           .prop('pwd', S.string().required())
       },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const { body } = <any>req
@@ -114,12 +114,12 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
           .prop('email', S.string().pattern(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/))
           .prop('pass', S.string().minLength(6))
       },
-      preValidation: [V['auth:login']]
+      preValidation: [V.auth.login]
     },
     async (req) => {
       const { params, body } = <any>req
       const _id = new ObjectId(params.id)
-      if (!_id.equals(req['ctx:user']._id)) throw V.httpErrors.forbidden()
+      if (!_id.equals(req.ctx.user!._id)) throw V.httpErrors.forbidden()
 
       const update: UpdateQuery<IUserDoc> = {
         $set: {}
@@ -154,7 +154,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     '/:id',
     {
       schema: { params: ObjectIdSchema },
-      preValidation: [V['auth:login'], V['auth:admin']]
+      preValidation: [V.auth.admin]
     },
     async (req) => {
       const { params } = <any>req
