@@ -26,7 +26,7 @@ export const authPlugin = fp(async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
   const { Metas, Users } = getCollections(db)
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const jwtMeta = (await Metas.findOne({ _id: S_KEY_JWT_SECRET }))!
+  const jwtMeta = (await Metas.findOne({ slug: S_KEY_JWT_SECRET }))!
   V.register(fastifyJwt, { secret: jwtMeta.value })
 
   V.decorate('auth', {

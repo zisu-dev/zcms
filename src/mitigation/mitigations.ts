@@ -9,7 +9,7 @@ defineMitigation('0.0.1', async ({ cols }) => {
   await Tags.updateMany({}, { $set: { content: '' } })
 })
 
-defineMitigation('0.0.2', async ({ client, db, logger, cols }) => {
+defineMitigation('0.0.2', async ({ db, logger, cols }) => {
   const collections = await db.listCollections().toArray()
   for (const collection of collections) {
     logger.info('Drop indexes for ' + collection.name)
@@ -20,4 +20,8 @@ defineMitigation('0.0.2', async ({ client, db, logger, cols }) => {
   await Users.createIndex('email', { unique: true, name: 'email' })
   await Posts.createIndex('slug', { unique: true, name: 'slug' })
   await Tags.createIndex('slug', { unique: true, name: 'slug' })
+})
+
+defineMitigation('0.0.3', async ({ cols: { Metas } }) => {
+  await Metas.createIndex('slug', { unique: true, name: 'slug' })
 })

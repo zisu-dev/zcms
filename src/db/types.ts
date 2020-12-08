@@ -1,8 +1,11 @@
 import { Db, ObjectId } from 'mongodb'
+import { S_KEY_DB_VERSION } from '../utils'
 
 export interface IMetaDoc {
-  _id: string
+  _id: ObjectId
+  slug: string
   value: any
+  public: boolean
 }
 
 export interface ITagEmbeddedDoc {
@@ -57,3 +60,9 @@ export function getCollections(db: Db) {
 }
 
 export type ZCMSCollections = ReturnType<typeof getCollections>
+
+export async function getDBVersion(db: Db) {
+  const { Metas } = getCollections(db)
+  const metaVer = await Metas.findOne({ slug: S_KEY_DB_VERSION })
+  return metaVer?.value
+}

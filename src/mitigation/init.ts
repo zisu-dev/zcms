@@ -27,9 +27,10 @@ DI.step(K_APP_INIT, async () => {
   logger.info('DB is clear')
   const { Metas, Users, Posts, Tags } = getCollections(db)
   const jwtSecret = await randomBytesAsync(32).then((b) => b.toString('base64'))
+  await Metas.createIndex('slug', { unique: true, name: 'slug' })
   await Metas.insertMany([
-    { _id: S_KEY_DB_VERSION, value: '0.0.2' },
-    { _id: S_KEY_JWT_SECRET, value: jwtSecret }
+    { slug: S_KEY_DB_VERSION, value: '0.0.3', public: false },
+    { slug: S_KEY_JWT_SECRET, value: jwtSecret, public: false }
   ])
 
   await Users.createIndex('slug', { unique: true, name: 'slug' })

@@ -24,13 +24,16 @@ DI.step(K_APP_MITIGATION, async () => {
   M.sort((a, b) => semver.compare(a[0], b[0]))
 
   for (const [ver, fn] of M) {
-    const cur = await Metas.findOne({ _id: S_KEY_DB_VERSION })
+    const cur = await Metas.findOne({ slug: S_KEY_DB_VERSION })
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (semver.lt(cur!.value, ver)) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       logger.info(`Mitigate from ${cur!.value} to ${ver}`)
       await fn({ client, db, logger, cols: getCollections(db) })
-      await Metas.updateOne({ _id: S_KEY_DB_VERSION }, { $set: { value: ver } })
+      await Metas.updateOne(
+        { slug: S_KEY_DB_VERSION },
+        { $set: { value: ver } }
+      )
     }
   }
 })
