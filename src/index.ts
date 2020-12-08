@@ -15,7 +15,7 @@ import {
   __package
 } from './utils'
 import { logger } from './log'
-import { getCollections, IMetaDoc } from './db'
+import { getCollections } from './db'
 
 async function main() {
   const db = await getDb()
@@ -23,9 +23,9 @@ async function main() {
 
   if (__args.init || !(await Metas.findOne({ _id: S_KEY_DB_VERSION }))) {
     await DI.waitFor(K_APP_INIT)
-  } else {
-    await DI.waitFor(K_APP_MITIGATION)
   }
+
+  await DI.waitFor(K_APP_MITIGATION)
 
   logger.info(
     'Database initialized. Version: ' +

@@ -55,3 +55,5 @@ export function getCollections(db: Db) {
     Tags: db.collection<ITagDoc>('tag')
   }
 }
+
+export type ZCMSCollections = ReturnType<typeof getCollections>
