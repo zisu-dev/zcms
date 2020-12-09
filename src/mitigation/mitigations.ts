@@ -1,3 +1,4 @@
+import { Binary } from 'mongodb'
 import { defineMitigation } from './mitigation_base'
 
 defineMitigation('0.0.0', async ({ logger }) => {
@@ -24,4 +25,19 @@ defineMitigation('0.0.2', async ({ db, logger, cols }) => {
 
 defineMitigation('0.0.3', async ({ cols: { Metas } }) => {
   await Metas.createIndex('slug', { unique: true, name: 'slug' })
+})
+
+defineMitigation('0.0.4', async ({ cols: { Users } }) => {
+  const users = await Users.find().toArray()
+  for (const user of users) {
+    // @ts-expect-error
+    const hash: string = user.pass.hash
+    // @ts-expect-error
+    const salt: string = user.pass.salt
+    const pass = {
+      hash: new Binary(Buffer.from(hash, 'hex')),
+      salt: new Binary(Buffer.from(salt, 'hex'))
+    }
+    await Users.updateOne({ _id: user._id }, { $set: { pass } })
+  }
 })

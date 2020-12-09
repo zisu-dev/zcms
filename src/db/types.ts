@@ -1,4 +1,4 @@
-import { Db, ObjectId } from 'mongodb'
+import { Binary, Db, ObjectId } from 'mongodb'
 import { S_KEY_DB_VERSION } from '../utils'
 
 export interface IMetaDoc {
@@ -27,8 +27,8 @@ export interface IPostDoc {
 }
 
 export interface IUserPass {
-  hash: string
-  salt: string
+  hash: Binary
+  salt: Binary
 }
 
 export interface IUserDoc {
