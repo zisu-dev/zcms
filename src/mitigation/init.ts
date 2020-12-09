@@ -29,7 +29,7 @@ DI.step(K_APP_INIT, async () => {
   const jwtSecret = await randomBytesAsync(32).then((b) => b.toString('base64'))
   await Metas.createIndex('slug', { unique: true, name: 'slug' })
   await Metas.insertMany([
-    { slug: S_KEY_DB_VERSION, value: '0.0.3', public: false },
+    { slug: S_KEY_DB_VERSION, value: '0.0.4', public: false },
     { slug: S_KEY_JWT_SECRET, value: jwtSecret, public: false }
   ])
 

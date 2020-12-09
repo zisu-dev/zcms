@@ -27,7 +27,9 @@ defineMitigation('0.0.3', async ({ cols: { Metas } }) => {
   await Metas.createIndex('slug', { unique: true, name: 'slug' })
 })
 
-defineMitigation('0.0.4', async ({ cols: { Users } }) => {
+defineMitigation('0.0.4', async ({ cols: { Users, Metas } }) => {
+  await Metas.updateMany({}, { $set: { public: false } })
+
   const users = await Users.find().toArray()
   for (const user of users) {
     // @ts-expect-error

@@ -11,6 +11,7 @@ import { userPlugin } from './user'
 import { noAdditionalProperties } from './no_additional_properties'
 import { adminPlugin } from './admin'
 import { pagePlugin } from './page'
+import { metaPlugin } from './meta'
 
 DI.step(K_WEB, async () => {
   const server = fastify({
@@ -50,6 +51,7 @@ DI.step(K_WEB, async () => {
   await server.register(postPlugin, { prefix: '/post' })
   await server.register(pagePlugin, { prefix: '/page' })
   await server.register(tagPlugin, { prefix: '/tag' })
+  await server.register(metaPlugin, { prefix: '/meta' })
   await server.register(adminPlugin, { prefix: '/admin' })
   await server.listen(8010)
   return server
