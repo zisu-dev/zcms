@@ -45,6 +45,12 @@ export const PostDTO = S.object()
   .prop('public', S.boolean())
   .prop('tags', S.array().items(TagEmbeddedDTO))
 
+export const MetaDTO = S.object()
+  .prop('_id', S.string())
+  .prop('slug', S.string())
+  .prop('value')
+  .prop('public', S.boolean())
+
 export function paginationResult(type: ObjectSchema) {
   return S.object()
     .prop('items', S.array().items(type))

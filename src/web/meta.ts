@@ -2,7 +2,13 @@ import { FastifyPluginAsync } from 'fastify'
 import { FilterQuery, ObjectId, UpdateQuery } from 'mongodb'
 import { getCollections, IMetaDoc } from '../db'
 import { getDb, isObjectId } from '../utils'
-import { ObjectIdOrSlugSchema, ObjectIdSchema, S } from './common'
+import {
+  MetaDTO,
+  ObjectIdOrSlugSchema,
+  ObjectIdSchema,
+  paginationResult,
+  S
+} from './common'
 
 export const metaPlugin: FastifyPluginAsync = async (V) => {
   const { Metas } = getCollections(await getDb())
@@ -10,6 +16,11 @@ export const metaPlugin: FastifyPluginAsync = async (V) => {
   V.get(
     '/',
     {
+      schema: {
+        response: {
+          200: paginationResult(MetaDTO)
+        }
+      },
       preValidation: [V.auth.admin]
     },
     async (req) => {
@@ -18,7 +29,10 @@ export const metaPlugin: FastifyPluginAsync = async (V) => {
         query.public = true
       }
       const metas = await Metas.find(query).toArray()
-      return metas
+      return {
+        items: metas,
+        total: metas.length
+      }
     }
   )
 

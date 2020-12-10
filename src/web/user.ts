@@ -32,7 +32,7 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
       const { page, per_page } = qs
 
       const query: FilterQuery<IUserDoc> = {}
-      const total = await Posts.countDocuments(query)
+      const total = await Users.countDocuments(query)
       const skip = (page - 1) * per_page
       if (skip && skip >= total) throw V.httpErrors.notFound()
 
