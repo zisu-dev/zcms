@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'ZCMS',
       script: 'build/index.js',
-      watch: true,
+      watch: false,
       env: {
         NODE_ENV: 'production'
       }
