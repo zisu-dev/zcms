@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
-import got from 'got/dist/source'
+import got from 'got'
 import { Db } from 'mongodb'
 import { getCollections, getMetaValue } from '../../db'
 import { DI, K_DB, notNull, S_KEY_OAUTH_CONFIG } from '../../utils'
