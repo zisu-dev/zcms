@@ -12,6 +12,7 @@ import { noAdditionalProperties } from './no_additional_properties'
 import { adminPlugin } from './admin'
 import { pagePlugin } from './page'
 import { metaPlugin } from './meta'
+import { oAuthPlugin } from './oauth'
 
 DI.step(K_WEB, async () => {
   const server = fastify({
@@ -47,6 +48,7 @@ DI.step(K_WEB, async () => {
   await server.register(fastifyStatic, { root: __args.staticPath })
 
   await server.register(authPlugin)
+  await server.register(oAuthPlugin, { prefix: '/oauth' })
   await server.register(userPlugin, { prefix: '/user' })
   await server.register(postPlugin, { prefix: '/post' })
   await server.register(pagePlugin, { prefix: '/page' })

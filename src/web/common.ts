@@ -22,6 +22,7 @@ export const UserDTO = S.object()
     'perm',
     S.object().prop('admin', S.boolean()).prop('comment', S.boolean())
   )
+  .prop('oauth', S.object().prop('github', S.number()))
 
 export const TagDTO = S.object()
   .prop('_id', S.string())

@@ -43,3 +43,9 @@ defineMitigation('0.0.4', async ({ cols: { Users, Metas } }) => {
     await Users.updateOne({ _id: user._id }, { $set: { pass } })
   }
 })
+
+defineMitigation('0.0.5', async ({ cols: { Metas, Users } }) => {
+  await Metas.insertOne({ slug: '$oauth_config', value: {}, public: false })
+  await Users.updateMany({}, { $set: { oauth: {} } })
+  await Users.createIndex('oauth.github', { unique: true, sparse: true })
+})

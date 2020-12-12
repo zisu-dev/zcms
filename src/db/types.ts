@@ -1,5 +1,5 @@
-import { Binary, Db, ObjectId } from 'mongodb'
-import { S_KEY_DB_VERSION } from '../utils'
+import { Binary, Collection, Db, ObjectId } from 'mongodb'
+import { DI, K_DB, S_KEY_DB_VERSION } from '../utils'
 
 export interface IMetaDoc {
   _id: ObjectId
@@ -41,6 +41,9 @@ export interface IUserDoc {
     admin?: boolean
     comment?: boolean
   }
+  oauth: {
+    github?: number
+  }
 }
 
 export interface ITagDoc {
@@ -57,6 +60,13 @@ export function getCollections(db: Db) {
     Users: db.collection<IUserDoc>('user'),
     Tags: db.collection<ITagDoc>('tag')
   }
+}
+
+export async function getMetaValue(slug: string) {
+  const db = await DI.waitFor<Db>(K_DB)
+  const { Metas } = getCollections(db)
+  const meta = await Metas.findOne({ slug })
+  return meta!.value
 }
 
 export type ZCMSCollections = ReturnType<typeof getCollections>

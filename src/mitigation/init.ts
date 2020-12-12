@@ -43,7 +43,8 @@ DI.step(K_APP_INIT, async () => {
     pass: await generatePasswordPair(DEFAULT_ADMIN_PASS),
     perm: {
       admin: true
-    }
+    },
+    oauth: {}
   })
   logger.info(
     `Created admin user [${r.insertedId}] name=${DEFAULT_ADMIN_NAME} pass=${DEFAULT_ADMIN_PASS}`

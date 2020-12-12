@@ -4,7 +4,7 @@ import fastifyJwt from 'fastify-jwt'
 import { Db, ObjectId } from 'mongodb'
 import { DI, K_DB, notNull, S_KEY_JWT_SECRET, verifyPassword } from '../utils'
 import { FastifyRequest, preValidationHookHandler } from 'fastify'
-import { getCollections, IUserDoc } from '../db'
+import { getCollections, getMetaValue, IUserDoc } from '../db'
 import { UserDTO } from './common'
 
 declare module 'fastify' {
@@ -24,10 +24,8 @@ declare module 'fastify' {
 
 export const authPlugin = fp(async (V) => {
   const db = await DI.waitFor<Db>(K_DB)
-  const { Metas, Users } = getCollections(db)
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const jwtMeta = (await Metas.findOne({ slug: S_KEY_JWT_SECRET }))!
-  V.register(fastifyJwt, { secret: jwtMeta.value })
+  const { Users } = getCollections(db)
+  V.register(fastifyJwt, { secret: await getMetaValue(S_KEY_JWT_SECRET) })
 
   V.decorate('auth', {
     login: async (req: FastifyRequest) => {
@@ -66,7 +64,7 @@ export const authPlugin = fp(async (V) => {
         body: S.object()
           .prop('login', S.string().required())
           .prop('pass', S.string().required())
-          .prop('expires', S.enum(['1d', '1m']).default('1d')),
+          .prop('expires', S.enum(['1d']).default('1d')),
         response: {
           200: S.object().prop('user', UserDTO).prop('token', S.string())
         }

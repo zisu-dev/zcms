@@ -98,7 +98,8 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
         name,
         email,
         pass,
-        perm
+        perm,
+        oauth: {}
       })
       return r.insertedId
     }
