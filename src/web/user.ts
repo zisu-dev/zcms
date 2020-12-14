@@ -36,7 +36,9 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
       const skip = (page - 1) * per_page
       if (skip && skip >= total) throw V.httpErrors.notFound()
 
-      const users = await Users.find(query, { projection: { pass: 0 } })
+      const users = await Users.find(query, {
+        projection: { pass: 0, oauth: 0 }
+      })
         .skip(skip)
         .limit(per_page)
         .toArray()
@@ -120,33 +122,24 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     async (req) => {
       const { params, body } = <any>req
       const _id = new ObjectId(params.id)
-      if (!_id.equals(req.ctx.user!._id)) throw V.httpErrors.forbidden()
+      if (!req.ctx.user!.perm.admin && !_id.equals(req.ctx.user!._id)) {
+        throw V.httpErrors.forbidden()
+      }
 
-      const update: UpdateQuery<IUserDoc> = {
+      const update: any = {
         $set: {}
       }
       if ('name' in body) {
-        update.$set = {
-          ...update.$set,
-          name: body.name
-        }
+        update.$set.name = body.name
       }
       if ('email' in body) {
-        update.$set = {
-          ...update.$set,
-          email: body.email
-        }
+        update.$set.email = body.email
       }
       if ('pass' in body) {
-        update.$set = {
-          ...update.$set,
-          pass: await generatePasswordPair(body.pass)
-        }
+        update.$set.pass = await generatePasswordPair(body.pass)
       }
 
-      const { value: user } = await Users.findOneAndUpdate({ _id }, update, {
-        returnOriginal: false
-      })
+      await Users.updateOne({ _id }, update)
       return true
     }
   )
@@ -160,12 +153,8 @@ export const userPlugin: FastifyPluginAsync = async (V) => {
     async (req) => {
       const { params } = <any>req
       const _id = new ObjectId(params.id)
-      const { value: user } = await Users.findOneAndDelete({ _id })
-      if (user) {
-        return true
-      } else {
-        throw V.httpErrors.notFound()
-      }
+      await Users.deleteOne({ _id })
+      return true
     }
   )
 }

@@ -50,7 +50,7 @@ export const authPlugin = fp(async (V) => {
       if (!r._id || typeof r._id !== 'string') throw V.httpErrors.forbidden()
       const user = await Users.findOne(
         { _id: new ObjectId(r._id) },
-        { projection: { pass: 0 } }
+        { projection: { pass: 0, oauth: 0 } }
       )
       if (!user) throw V.httpErrors.forbidden()
       req.ctx.user = user
@@ -72,9 +72,10 @@ export const authPlugin = fp(async (V) => {
     },
     async (req) => {
       const { body } = <any>req
-      const user = await Users.findOne({
-        $or: [{ slug: body.login }, { email: body.login }]
-      })
+      const user = await Users.findOne(
+        { $or: [{ slug: body.login }, { email: body.login }] },
+        { projection: { oauth: 0 } }
+      )
       notNull(user)
       if (!(await verifyPassword(body.pass, user.pass))) {
         throw V.httpErrors.forbidden()

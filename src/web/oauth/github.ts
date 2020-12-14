@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify'
 import got from 'got'
-import { Db } from 'mongodb'
+import { Db, ObjectId } from 'mongodb'
 import * as uuid from 'uuid'
 import { getCollections, getMetaValue } from '../../db'
 import {
@@ -10,7 +10,7 @@ import {
   notNull,
   S_KEY_OAUTH_CONFIG
 } from '../../utils'
-import { S, UserDTO } from '../common'
+import { ObjectIdSchema, S, UserDTO } from '../common'
 
 export const githubOAuthPlugin: FastifyPluginAsync = async (V) => {
   const oauthConfig = await getMetaValue(S_KEY_OAUTH_CONFIG)
@@ -113,9 +113,10 @@ export const githubOAuthPlugin: FastifyPluginAsync = async (V) => {
   )
 
   V.post(
-    '/link',
+    '/link/:id',
     {
       schema: {
+        params: ObjectIdSchema,
         body: S.object()
           .prop('code', S.string().required())
           .prop('state', S.string().required())
@@ -124,8 +125,14 @@ export const githubOAuthPlugin: FastifyPluginAsync = async (V) => {
     },
     async (req) => {
       const {
-        body: { code, state }
+        body: { code, state },
+        params
       } = <any>req
+      const _id = new ObjectId(params.id)
+      if (!req.ctx.user!.perm.admin && !_id.equals(req.ctx.user!._id)) {
+        throw V.httpErrors.forbidden()
+      }
+
       const {
         body: { access_token }
       } = await got('https://github.com/login/oauth/access_token', {
@@ -139,24 +146,27 @@ export const githubOAuthPlugin: FastifyPluginAsync = async (V) => {
       })
       const userInfo = await getUserInfo(access_token)
       const userId = userInfo.id as number
-      await Users.updateOne(
-        { _id: req.ctx.user!._id },
-        { $set: { 'oauth.github': userId } }
-      )
+      await Users.updateOne({ _id }, { $set: { 'oauth.github': userId } })
       return userId
     }
   )
 
   V.post(
-    '/unlink',
+    '/unlink/:id',
     {
+      schema: {
+        params: ObjectIdSchema
+      },
       preValidation: [V.auth.login]
     },
     async (req) => {
-      await Users.updateOne(
-        { _id: req.ctx.user!._id },
-        { $unset: { 'oauth.github': '' } }
-      )
+      const { params } = <any>req
+      const _id = new ObjectId(params.id)
+      if (!req.ctx.user!.perm.admin && !_id.equals(req.ctx.user!._id)) {
+        throw V.httpErrors.forbidden()
+      }
+
+      await Users.updateOne({ _id }, { $unset: { 'oauth.github': '' } })
       return true
     }
   )

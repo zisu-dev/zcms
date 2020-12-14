@@ -51,6 +51,10 @@ DI.step(K_APP_INIT, async () => {
   )
 
   await Posts.createIndex('slug', { unique: true, name: 'slug' })
+  await Posts.createIndex(
+    { priority: -1, published: -1 },
+    { name: 'default_list' }
+  )
 
   await Tags.createIndex('slug', { unique: true, name: 'slug' })
   logger.info('Initialize done')
