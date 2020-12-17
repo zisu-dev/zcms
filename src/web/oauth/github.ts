@@ -37,7 +37,7 @@ export const githubOAuthPlugin: FastifyPluginAsync = async (V) => {
         body: S.object()
           .prop('code', S.string().required())
           .prop('state', S.string().required())
-          .prop('expires', S.enum(['1d']).default('1d')),
+          .prop('expires', S.enum(['1d', '30d']).default('1d')),
         response: {
           200: S.object().prop('user', UserDTO).prop('token', S.string())
         }
@@ -76,7 +76,7 @@ export const githubOAuthPlugin: FastifyPluginAsync = async (V) => {
         body: S.object()
           .prop('code', S.string().required())
           .prop('state', S.string().required())
-          .prop('expires', S.enum(['1d']).default('1d')),
+          .prop('expires', S.enum(['1d', '30d']).default('1d')),
         response: {
           200: S.object().prop('user', UserDTO).prop('token', S.string())
         }

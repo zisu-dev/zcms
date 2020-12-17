@@ -1,6 +1,6 @@
 {
   "name": "zcms",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "ZhangZisu CMS",
   "main": "build/index.js",
   "repository": "git@github.com:ZhangZisu/zcms.git",
