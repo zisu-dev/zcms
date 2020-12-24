@@ -985,10 +985,10 @@ flatted@^2.0.0:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-2.0.2.tgz#4575b21e2bcee7434aa9be662f4b7b5f9c2b5138"
   integrity sha512-r5wGx7YeOwNWNlCA0wQ86zKyDLMQr+/RB8xy74M4hTphfmjlijTSSXGuH8rnvKZnfT9i+75zmd8jcKdMR4O6jA==
 
-fluent-schema@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/fluent-schema/-/fluent-schema-1.0.5.tgz#7a17bdab726f17d2b3c845557bccbb73f2570c5a"
-  integrity sha512-JzLiRtpIo8BZjc4wtIags3hyntIFCI/UqTXStCTs8L17ftYALPM6aqP1lrdTdsOk3SYWQOsdKFYVuetZOmSCTg==
+fluent-json-schema@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/fluent-json-schema/-/fluent-json-schema-2.0.2.tgz#1490c08faeec45d24e79ac579083421cf1f1a2f7"
+  integrity sha512-Mi/u8suXoNQa07kgMuwpY+y2Aihcs53Pp82ShWacG94KqWlxY5dHn6AwORQNOqTMpzzkFHXXHJv8APkIw0Zu7g==
   dependencies:
     deepmerge "^4.2.2"
 

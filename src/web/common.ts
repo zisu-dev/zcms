@@ -1,4 +1,4 @@
-import S, { ObjectSchema } from 'fluent-schema'
+import S, { ObjectSchema } from 'fluent-json-schema'
 export { S }
 
 export const UserIdSchema = S.string()
