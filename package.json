@@ -44,7 +44,8 @@
     "lint:fix": "yarn eslint --fix && yarn prettier --write .",
     "build": "yarn tsc",
     "build:watch": "yarn tsc --watch",
-    "dev": "node . --dev"
+    "dev": "node . --dev",
+    "prepare": "yarn build"
   },
   "bin": {
     "zcmsd": "./build/index.js"
