@@ -1,5 +1,5 @@
 {
-  "name": "zcms",
+  "name": "@zzisu/cms",
   "version": "0.0.6",
   "description": "ZhangZisu CMS",
   "main": "build/index.js",
