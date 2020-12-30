@@ -22,7 +22,10 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
           .prop('page', S.integer().minimum(1).required())
           .prop('per_page', S.integer().minimum(1).maximum(50).required())
           .prop('search', S.string().minLength(1).maxLength(128))
-          .prop('tag', S.string().minLength(1)),
+          .prop('tag', S.string().minLength(1))
+          .prop('sort', S.string().enum(['updated']))
+          .prop('published_before', S.integer())
+          .prop('published_after', S.integer()),
         response: {
           200: paginationResult(PostDTO)
         }
@@ -31,32 +34,48 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     async (req) => {
       const { query: qs } = <any>req
       const { page, per_page } = qs
+      const now = new Date()
 
       const query: FilterQuery<IPostDoc> = {
         priority: {
           $gte: 0
+        },
+        published: {
+          $lte: now
         }
       }
       if (!req.ctx.user?.perm.admin) {
         query.public = true
       }
-      if ('search' in qs) {
-        query.content = new RegExp(qs.search)
+      if ('search' in qs) query.content = new RegExp(qs.search)
+      if ('tag' in qs) query['tags._id'] = new ObjectId(qs.tag)
+      if ('published_before' in qs) {
+        if (!req.ctx.user?.perm.admin) {
+          qs.published_before = Math.min(qs.published_before, +now)
+        }
+        // @ts-expect-error
+        query.published.$lte = new Date(qs.published_before)
       }
-      if ('tag' in qs) {
-        query['tags._id'] = new ObjectId(qs.tag)
+      if ('published_after' in qs) {
+        // @ts-expect-error
+        query.published.$gte = new Date(qs.published_after)
       }
+
       const total = await Posts.countDocuments(query)
       const skip = (page - 1) * per_page
       if (skip && skip >= total) throw V.httpErrors.notFound()
 
-      const posts = await Posts.find(query, {
+      let cursor = await Posts.find(query, {
         projection: { content: 0 }
       })
-        .sort({ priority: -1, published: -1 })
-        .skip(skip)
-        .limit(per_page)
-        .toArray()
+
+      if (qs.sort === 'updated') {
+        cursor = cursor.sort({ updated: -1 })
+      } else {
+        cursor = cursor.sort({ priority: -1, published: -1 })
+      }
+
+      const posts = await cursor.skip(skip).limit(per_page).toArray()
 
       return {
         items: posts,
@@ -70,26 +89,33 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
     {
       schema: {
         body: S.object()
-          .prop('priority', S.integer().minimum(-1).required())
+          .prop('priority', S.integer().minimum(-1))
           .prop('slug', S.string().required())
-          .prop('title', S.string().required())
-          .prop('summary', S.string().required())
-          .prop('content', S.string().required())
-          .prop('published', S.integer().required())
-          .prop('public', S.boolean().required())
+          .prop('title', S.string())
+          .prop('summary', S.string())
+          .prop('content', S.string())
+          .prop('published', S.integer())
+          .prop('updated', S.integer())
+          .prop('public', S.boolean())
       },
       preValidation: [V.auth.admin]
     },
     async (req) => {
       const { body } = <any>req
+      if (!('published' in body)) {
+        body.published = body.updated = Date.now()
+      } else if (!('updated' in body)) {
+        body.updated = body.published
+      }
       const r = await Posts.insertOne({
-        priority: body.priority,
+        priority: body.priority ?? 0,
         slug: body.slug,
-        title: body.title,
-        summary: body.summary,
-        content: body.content,
+        title: body.title ?? body.slug,
+        summary: body.summary ?? '',
+        content: body.content ?? '',
         published: new Date(body.published),
-        public: body.public,
+        updated: new Date(body.updated),
+        public: body.public ?? false,
         tags: []
       })
       return r.insertedId
@@ -137,6 +163,7 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
           .prop('content', S.string())
           .prop('summary', S.string())
           .prop('published', S.integer())
+          .prop('updated', S.integer())
           .prop('public', S.boolean())
       },
       preValidation: [V.auth.admin]
@@ -147,6 +174,9 @@ export const postPlugin: FastifyPluginAsync = async (V) => {
       if (Object.keys(body).length <= 0) throw V.httpErrors.badRequest()
       if ('published' in body) {
         body.published = new Date(body.published)
+      }
+      if ('updated' in body) {
+        body.updated = new Date(body.updated)
       }
 
       const update: UpdateQuery<IPostDoc> = {

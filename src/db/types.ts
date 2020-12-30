@@ -22,6 +22,7 @@ export interface IPostDoc {
   summary: string
   content: string
   published: Date
+  updated: Date
   public: boolean
   tags: ITagEmbeddedDoc[]
 }

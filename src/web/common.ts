@@ -43,6 +43,7 @@ export const PostDTO = S.object()
   .prop('summary', S.string())
   .prop('content', S.string())
   .prop('published', S.number())
+  .prop('updated', S.number())
   .prop('public', S.boolean())
   .prop('tags', S.array().items(TagEmbeddedDTO))
 

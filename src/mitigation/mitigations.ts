@@ -49,3 +49,16 @@ defineMitigation('0.0.5', async ({ cols: { Metas, Users } }) => {
   await Users.updateMany({}, { $set: { oauth: {} } })
   await Users.createIndex('oauth.github', { unique: true, sparse: true })
 })
+
+defineMitigation('0.0.6', async ({ cols: { Posts }, logger }) => {
+  const posts = await Posts.find({}, { projection: { published: 1 } }).toArray()
+  logger.info(`Updating ${posts.length} posts`)
+  for (const post of posts) {
+    await Posts.updateOne(
+      { _id: post._id },
+      { $set: { updated: post.published } }
+    )
+  }
+  await Posts.createIndex({ updated: -1 }, { name: 'updated' })
+  logger.info('Done')
+})
