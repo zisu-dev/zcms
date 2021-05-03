@@ -55,6 +55,6 @@ DI.step(K_WEB, async () => {
   await server.register(tagPlugin, { prefix: '/tag' })
   await server.register(metaPlugin, { prefix: '/meta' })
   await server.register(adminPlugin, { prefix: '/admin' })
-  await server.listen(8010)
+  await server.listen(8010, '0.0.0.0')
   return server
 })
